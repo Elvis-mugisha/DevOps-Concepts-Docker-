@@ -45,22 +45,21 @@ pipeline {
             }
         }
 
-// Push Docker Image Stage
-stage('Push Docker Image') {
-    steps {
-        echo 'Pushing Docker image...'
-        script {
-            withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                // Debug output for Docker username and password
-                bat 'echo %DOCKER_USERNAME%'
-                bat 'echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin'
 
-                // Tag and push Docker image
-                bat 'docker tag %DOCKER_IMAGE%:latest %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest'
-                bat 'docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest'
+
+        // Push Docker Image Stage
+            stage('Push Docker Image') {
+                steps {
+                    echo 'Pushing Docker image...'
+                    script {
+                        withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            bat 'docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%'
+                            bat 'docker tag elvis054/demo:latest elvis054/demo:latest'
+                            bat 'docker push elvis054/demo:latest'
+                        }
+                    }
+                }
             }
-        }
-    }
 }
 
 
