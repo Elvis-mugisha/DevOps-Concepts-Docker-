@@ -64,7 +64,7 @@ pipeline {
                 echo 'Deploying Docker image...'
                 script {
                     bat 'docker pull %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest'
-                    bat 'docker run -d -p 8081:8080 %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest'
+                    bat 'docker run -d -p 8082:8080 %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest'
                 }
             }
         }
