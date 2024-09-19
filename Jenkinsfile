@@ -3,19 +3,26 @@ pipeline {
 
     environment {
         MAVEN_HOME = tool 'maven' // Ensure Maven is configured in Jenkins (Global Tool Configuration)
-        DOCKER_CREDENTIALS_ID = '7878'
+        DOCKER_CREDENTIALS_ID = '7878' // Update with the correct credentials ID
         DOCKER_IMAGE = 'elvis054/demo'
         DOCKER_REGISTRY = 'docker.io'
     }
 
     stages {
+        // Checkout the source code from GitHub
+        stage('Checkout') {
+            steps {
+                echo 'Cloning the repository...'
+                git credentialsId: '7878', url: 'git@github.com:Elvis-mugisha/DevOps-Concepts-Docker-.git'
+            }
+        }
+
         // Build Stage
         stage('Build') {
             steps {
                 echo 'Building the project...'
                 script {
-                    def mvnCmd = "${MAVEN_HOME}\\bin\\mvn.cmd"
-                    bat "${mvnCmd} clean install"
+                    sh "${MAVEN_HOME}/bin/mvn clean install"
                 }
             }
         }
@@ -25,8 +32,7 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 script {
-                    def mvnCmd = "${MAVEN_HOME}\\bin\\mvn.cmd"
-                    bat "${mvnCmd} test"
+                    sh "${MAVEN_HOME}/bin/mvn test"
                 }
             }
         }
@@ -37,7 +43,7 @@ pipeline {
                 echo 'Building Docker image...'
                 script {
                     withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        bat 'docker build -t manziirw/dockerlab-app:latest .'
+                        sh 'docker build -t elvis054/demo:latest .'
                     }
                 }
             }
@@ -46,12 +52,12 @@ pipeline {
         // Push Docker Image Stage
         stage('Push Docker Image') {
             steps {
-                echo 'Pushing Docker image...'
+                echo 'Pushing Docker image to registry...'
                 script {
                     withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        bat 'docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%'
-                        bat 'docker tag manziirw/dockerlab-app:latest manziirw/dockerlab-app:latest'
-                        bat 'docker push manziirw/dockerlab-app:latest'
+                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                        sh 'docker tag elvis054/demo:latest elvis054/demo:latest'
+                        sh 'docker push elvis054/demo:latest'
                     }
                 }
             }
@@ -62,8 +68,8 @@ pipeline {
             steps {
                 echo 'Deploying Docker image...'
                 script {
-                    bat 'docker pull manziirw/dockerlab-app:latest'
-                    bat 'docker run -d -p 8081:8080 manziirw/dockerlab-app:latest'
+                    sh 'docker pull elvis054/demo:latest'
+                    sh 'docker run -d -p 8081:8080 elvis054/demo:latest'
                 }
             }
         }
