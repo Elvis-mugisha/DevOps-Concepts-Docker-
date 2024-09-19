@@ -8,14 +8,6 @@ pipeline {
         DOCKER_REGISTRY = 'docker.io'
     }
 
-    stages {
-        // Checkout the source code from GitHub
-        stage('Checkout') {
-            steps {
-                echo 'Cloning the repository...'
-                git credentialsId: '7878', url: 'git@github.com:Elvis-mugisha/DevOps-Concepts-Docker-.git'
-            }
-        }
 
         // Build Stage
         stage('Build') {
