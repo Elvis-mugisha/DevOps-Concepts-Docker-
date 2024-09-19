@@ -1,20 +1,23 @@
+
 pipeline {
     agent any
 
-    environment {
-        MAVEN_HOME = tool 'maven' // Ensure Maven is configured in Jenkins (Global Tool Configuration)
-        DOCKER_CREDENTIALS_ID = '7878' // Update with the correct credentials ID
-        DOCKER_IMAGE = 'elvis054/demo'
-        DOCKER_REGISTRY = 'docker.io'
-    }
+      environment {
+           MAVEN_HOME = tool 'maven' // Ensure Maven is configured in Jenkins (Global Tool Configuration)
+           DOCKER_CREDENTIALS_ID = '7878' // Update with the correct credentials ID for Docker
+           DOCKER_IMAGE = 'elvis054/demo'
+           DOCKER_REGISTRY = 'docker.io'
+       }
 
 
+    stages {
         // Build Stage
         stage('Build') {
             steps {
                 echo 'Building the project...'
                 script {
-                    sh "${MAVEN_HOME}/bin/mvn clean install"
+                    def mvnCmd = "${MAVEN_HOME}\\bin\\mvn.cmd"
+                    bat "${mvnCmd} clean install"
                 }
             }
         }
@@ -24,7 +27,8 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 script {
-                    sh "${MAVEN_HOME}/bin/mvn test"
+                    def mvnCmd = "${MAVEN_HOME}\\bin\\mvn.cmd"
+                    bat "${mvnCmd} test"
                 }
             }
         }
@@ -35,7 +39,7 @@ pipeline {
                 echo 'Building Docker image...'
                 script {
                     withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh 'docker build -t elvis054/demo:latest .'
+                        bat 'docker build -t %DOCKER_IMAGE%:latest .'
                     }
                 }
             }
@@ -44,12 +48,12 @@ pipeline {
         // Push Docker Image Stage
         stage('Push Docker Image') {
             steps {
-                echo 'Pushing Docker image to registry...'
+                echo 'Pushing Docker image...'
                 script {
                     withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
-                        sh 'docker tag elvis054/demo:latest elvis054/demo:latest'
-                        sh 'docker push elvis054/demo:latest'
+                        bat 'echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin'
+                        bat 'docker tag %DOCKER_IMAGE%:latest %DOCKER_IMAGE%:latest'
+                        bat 'docker push %DOCKER_IMAGE%:latest'
                     }
                 }
             }
@@ -60,8 +64,8 @@ pipeline {
             steps {
                 echo 'Deploying Docker image...'
                 script {
-                    sh 'docker pull elvis054/demo:latest'
-                    sh 'docker run -d -p 8081:8080 elvis054/demo:latest'
+                    bat 'docker pull %DOCKER_IMAGE%:latest'
+                    bat 'docker run -d -p 8081:8080 %DOCKER_IMAGE%:latest'
                 }
             }
         }
