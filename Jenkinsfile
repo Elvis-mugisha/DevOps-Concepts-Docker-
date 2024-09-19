@@ -1,14 +1,12 @@
-
 pipeline {
     agent any
 
-      environment {
-           MAVEN_HOME = tool 'maven' // Ensure Maven is configured in Jenkins (Global Tool Configuration)
-           DOCKER_CREDENTIALS_ID = '7878' // Update with the correct credentials ID for Docker
-           DOCKER_IMAGE = 'elvis054/demo'
-           DOCKER_REGISTRY = 'docker.io'
-       }
-
+    environment {
+        MAVEN_HOME = tool 'maven' // Ensure Maven is configured in Jenkins (Global Tool Configuration)
+        DOCKER_CREDENTIALS_ID = '7878' // Update with the correct credentials ID for Docker
+        DOCKER_IMAGE = 'elvis054/demo'
+        DOCKER_REGISTRY = 'docker.io'
+    }
 
     stages {
         // Build Stage
@@ -45,31 +43,27 @@ pipeline {
             }
         }
 
-
-
         // Push Docker Image Stage
-            stage('Push Docker Image') {
-                steps {
-                    echo 'Pushing Docker image...'
-                    script {
-                        withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            bat 'docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%'
-                            bat 'docker tag elvis054/demo:latest elvis054/demo:latest'
-                            bat 'docker push elvis054/demo:latest'
-                        }
-                    }
-                }
-            }
-}
+        stage('Push Docker Image') {
+            steps {
+                echo 'Pushing Docker image...'
 
+                  script {
+                                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                                        bat 'docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%'
+                                        bat 'docker tag elvis054/demo:latest elvis054/demo:latest'
+                                        bat 'docker push elvis054/demo:latest'
+                                    }
+            }
+        }
 
         // Deploy Docker Image Stage
         stage('Deploy Docker Image') {
             steps {
                 echo 'Deploying Docker image...'
                 script {
-                    bat 'docker pull %DOCKER_IMAGE%:latest'
-                    bat 'docker run -d -p 8081:8080 %DOCKER_IMAGE%:latest'
+                    bat 'docker pull %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest'
+                    bat 'docker run -d -p 8081:8080 %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest'
                 }
             }
         }
