@@ -47,12 +47,13 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 echo 'Pushing Docker image...'
-                script {
-                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        bat 'echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin'
-                        bat 'docker tag %DOCKER_IMAGE%:latest %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest'
-                        bat 'docker push %DOCKER_REGISTRY%/%DOCKER_IMAGE%:latest'
-                    }
+
+                    script {
+                         withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                          bat 'docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%'
+                          bat 'docker tag elvis054/demo:latest elvis054/demo:latest'
+                           bat 'docker push elvis054/demo:latest'
+                      }
                 }
             }
         }
